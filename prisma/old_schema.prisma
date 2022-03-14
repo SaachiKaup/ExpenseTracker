@@ -1,0 +1,39 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["dataProxy"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String?
+  email     String
+  Expense   Expense[]
+}
+
+model trial_user {
+  id        Int     @id
+  f_name    String  
+  l_name    String
+  age       Int
+  salary    Int
+}
+model Expense {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  url       String
+  shortUrl  String
+  userId    String?
+  User      User?    @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id        String @id
+}
