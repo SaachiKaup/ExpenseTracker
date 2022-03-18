@@ -1,0 +1,78 @@
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["dataProxy"]
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  name      String?
+  email     String
+  Expense   Expense[]
+}
+
+model MainUser {
+  id         Int    @id @default(autoincrement())
+  first_name String
+  last_name  String
+  age        Int
+}
+
+model Expense {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  url       String
+  shortUrl  String
+  userId    String?
+  User      User?    @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id String @id
+}
+
+//Tables start from here
+model categories {
+  cat_id    Int         @id @default(autoincrement())
+  cat_name  String      @db.VarChar(50)
+  expenses  expenses[]
+  set_limit set_limit[]
+}
+
+model expenses {
+  expense_id   Int         @id @default(autoincrement())
+  user_id      Int?
+  cat_id       Int?
+  daily_amt    Int?
+  expense_date DateTime?   @db.Date
+  categories   categories? @relation(fields: [cat_id], references: [cat_id], onDelete: NoAction, onUpdate: NoAction)
+  users        users?      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model set_limit {
+  user_id    Int
+  cat_id     Int
+  max_limit  Int?
+  categories categories @relation(fields: [cat_id], references: [cat_id], onDelete: NoAction, onUpdate: NoAction)
+  users      users      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([user_id, cat_id])
+}
+
+model users {
+  user_id    Int         @id @default(autoincrement())
+  first_name String      @db.VarChar(50)
+  last_name  String      @db.VarChar(50)
+  age        Int
+  expenses   expenses[]
+  set_limit  set_limit[]
+}

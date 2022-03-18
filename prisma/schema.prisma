@@ -40,37 +40,73 @@ model Category {
 }
 
 model categories {
-  cat_id    Int         @id @default(autoincrement())
+  cat_id    Int         @id(map: "categories_pkey1") @default(autoincrement())
   cat_name  String      @db.VarChar(50)
   expenses  expenses[]
-  set_limit set_limit[]
+  set_bound set_bound[]
 }
 
 model expenses {
-  expense_id   Int         @id @default(autoincrement())
+  expense_id   Int         @id(map: "expenses_pkey1") @default(autoincrement())
   user_id      Int?
   cat_id       Int?
   daily_amt    Int?
   expense_date DateTime?   @db.Date
-  categories   categories? @relation(fields: [cat_id], references: [cat_id], onDelete: NoAction, onUpdate: NoAction)
-  users        users?      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model set_limit {
-  user_id    Int
-  cat_id     Int
-  max_limit  Int?
-  categories categories @relation(fields: [cat_id], references: [cat_id], onDelete: NoAction, onUpdate: NoAction)
-  users      users      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([user_id, cat_id])
+  categories   categories? @relation(fields: [cat_id], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "expenses_cat_id_fkey1")
+  users        users?      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "expenses_user_id_fkey1")
 }
 
 model users {
-  user_id    Int         @id @default(autoincrement())
+  user_id    Int         @id(map: "users_pkey2") @default(autoincrement())
   first_name String      @db.VarChar(50)
   last_name  String      @db.VarChar(50)
   age        Int
   expenses   expenses[]
-  set_limit  set_limit[]
+  set_bound  set_bound[]
+}
+
+model set_bound {
+  user_id     Int
+  cat_id      Int
+  upper_bound Int?       @default(0)
+  categories  categories @relation(fields: [cat_id], references: [cat_id], onDelete: NoAction, onUpdate: NoAction)
+  users       users      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([user_id, cat_id])
+}
+
+model v1_categories {
+  cat_id       Int            @id(map: "categories_pkey") @default(autoincrement())
+  cat_name     String         @db.VarChar(50)
+  v1_expenses  v1_expenses[]
+  v1_set_limit v1_set_limit[]
+}
+
+model v1_expenses {
+  expense_id    Int            @id(map: "expenses_pkey") @default(autoincrement())
+  user_id       Int?
+  cat_id        Int?
+  daily_amt     Int?
+  expense_date  DateTime?      @db.Date
+  v1_categories v1_categories? @relation(fields: [cat_id], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "expenses_cat_id_fkey")
+  v1_users      v1_users?      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "expenses_user_id_fkey")
+}
+
+model v1_set_limit {
+  user_id       Int
+  cat_id        Int
+  max_limit     Int?
+  v1_categories v1_categories @relation(fields: [cat_id], references: [cat_id], onDelete: NoAction, onUpdate: NoAction, map: "set_limit_cat_id_fkey")
+  v1_users      v1_users      @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "set_limit_user_id_fkey")
+
+  @@id([user_id, cat_id], map: "set_limit_pkey")
+}
+
+model v1_users {
+  user_id      Int            @id(map: "users_pkey") @default(autoincrement())
+  first_name   String         @db.VarChar(50)
+  last_name    String         @db.VarChar(50)
+  age          Int
+  v1_expenses  v1_expenses[]
+  v1_set_limit v1_set_limit[]
 }
